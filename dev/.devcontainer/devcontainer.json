@@ -1,0 +1,7 @@
+{
+  "name": "DataEngineeringHomework Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app/src",
+  "extensions": ["ms-python.python", "ms-python.vscode-pylance"]
+}

@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: dataengineeringuser
+      POSTGRES_PASSWORD: dataengineeringpwd
+      POSTGRES_DB: dataengineeringdb
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+
+  api:
+    build: ./apidocker
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apidocker/src:/app/src
+      - ./simdata:/data/simdata
+    working_dir: /app
+    environment:
+      SIMDATA_FOLDER: /data/simdata
+
+  app:
+    build: ./appdocker
+    volumes:
+      - ./appdocker:/app
+      - ./rawdata:/data/rawdata
+      - ./simdata:/data/simdata
+    working_dir: /app/src
+    environment:
+      LANDING_ZONE: /data/rawdata
+      DATABASE_URL: postgres://dataengineeringuser:dataengineeringpwd@db:5432/dataengineeringdb
+      KAGGLE_API_TOKEN: KGAT_7ec727d8cbc61e4e1927a849a122fbbd
+      SIMDATA_FOLDER: /data/simdata
+      API_URL: http://api:3000
+
+    command: tail -f /dev/null
+    depends_on:
+      - db
+      - api
