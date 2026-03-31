@@ -1,0 +1,8 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+
+# Custom ignore rules
+/dev/pgdata/
+/dev/rawdata/
+/dev/simdata/steam_data.json
