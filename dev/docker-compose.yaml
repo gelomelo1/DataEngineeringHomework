@@ -25,6 +25,7 @@ services:
       - ./appdocker:/app
       - ./rawdata:/data/rawdata
       - ./simdata:/data/simdata
+      - ./tmpdata:/data/tmpdata
     working_dir: /app/src
     environment:
       LANDING_ZONE: /data/rawdata
@@ -32,6 +33,7 @@ services:
       KAGGLE_API_TOKEN: KGAT_7ec727d8cbc61e4e1927a849a122fbbd
       SIMDATA_FOLDER: /data/simdata
       API_URL: http://api:3000
+      TEMP_EXTRACT_ZONE: /data/tmpdata
 
     command: tail -f /dev/null
     depends_on:

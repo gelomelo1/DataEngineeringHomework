@@ -8,6 +8,10 @@ from pathlib import Path
 simdata_folder = Path(os.getenv("SIMDATA_FOLDER", "/app/simdata"))
 simdata_folder.mkdir(parents=True, exist_ok=True)
 
+def zero_simulate():
+    generate_fake_steam_data_and_merge_with_real_data()
+    print("All simulated datasets have been generated and merged with real data in the simulation data folder.")
+
 # Function to generate fake Steam data
 def generate_steam_data(n=200, seed=42, start_id=100_000_000):
     fake = Faker()

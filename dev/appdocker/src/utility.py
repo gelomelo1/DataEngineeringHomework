@@ -5,12 +5,6 @@ import time
 import requests
 from pathlib import Path
 
-# This function normalizes game titles by converting them to lowercase, stripping whitespace, and removing punctuation.
-def normalize_title(title: str) -> str:
-    title = title.lower().strip()
-    title = title.translate(str.maketrans("", "", string.punctuation))
-    return title
-
 # I used this function to fetch Steam data with retry logic and rate limit handling. I dont use this in the homework pipeline, becasue it takes a long time to run
 def fetch_steam_data(game_ids, output_file: Path):
     all_data = {}
