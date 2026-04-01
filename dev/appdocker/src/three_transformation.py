@@ -5,54 +5,124 @@ from pathlib import Path
 import string
 import ast
 
-landing_zone = Path(os.getenv("LANDING_ZONE", "/app/rawdata"))
+landing_zone = Path(os.getenv("LANDING_ZONE", "/data/rawdata"))
 landing_zone.mkdir(parents=True, exist_ok=True)
 
+clean_data_zone = Path(os.getenv("CLEAN_DATA_ZONE", "/data/cleandata"))
+clean_data_zone.mkdir(parents=True, exist_ok=True)
+
 def three_transformation():
-    print("Starting transformation of raw datasets into a single clean dataset...")
+    empty_clean_data_zone()
+    print("Starting transformation of raw datasets into clean datasets...")
+    # Load the game csv's and the steam_data.json into dataframes
     dfs = load_game_datas_into_dataframes()
 
+    # Get the common game ids, so comparison can be done accross the platforms
     common_games = get_common_game_ids(dfs)
 
     steam_json_df = next(d["data"] for d in dfs if d["platform"] == "steam" and d["fromType"] == "json")
 
+    # Get the genres for the common games from the steam json dataframe
     games_genres = get_games_genres(common_games, steam_json_df)
 
+    # Load the price csv's into dataframes
     price_dfs = load_price_datas_into_dataframes()
 
+    # Get the prices for the common games from the price dataframes and the steam json dataframe
     game_prices = get_game_prices(common_games, price_dfs, steam_json_df)
 
+    # Load the purchased_games csv's into dataframes
     sales_dfs = load_sales_datas_into_dataframes()
 
+    # Get the aggregated sales per platform for the common games from the purchased_games_dfs
     game_sales = get_game_sales(common_games, sales_dfs)
 
-    print(f"Found {len(common_games)} common games across platforms")
+    # Normalize the common games data and merge it with the prices, sales data to construct the final csv datasets
+    fact_game_sales_csv = construct_fact_game_sales_csv(common_games, game_sales, game_prices)
 
-    output_file = landing_zone / "common_games.json"
+    # Construct the final dim_game.csv by extracting the game name and steamID from common games
+    dim_game_csv = construct_dim_game_csv(common_games)
 
-    with open(output_file, "w") as f:
-        json.dump(common_games, f, indent=2)
+    # Construct the final switch_genre.csv which acts as a switch table between the common games and their genres, by extracting the steamId as gameId, and the corresponding genres id, in rows like a switch table from games_genres
+    switch_genre_csv = construct_switch_genre_csv(games_genres)
 
-    genres_output_file = landing_zone / "common_games_genres.json"
+    # Construct the final dim_genre.csv which contains the unique genres extracted from games_genres, with their ids and names
+    dim_genre_csv = construct_dim_genre_csv(games_genres)
 
-    with open(genres_output_file, "w") as f:
-        json.dump(games_genres, f, indent=2)
+    # Write the final csv datasets to the clean data zone
+    write_csv_files([fact_game_sales_csv, dim_game_csv, switch_genre_csv, dim_genre_csv])
 
-    prices_output_file = landing_zone / "common_games_prices.json"
+    print(f"Found {len(common_games)} common games.")
+    print("The related csv datasets have been written to the clean data zone.")
+    print("Finished transformation of raw datasets into clean datasets...")
 
-    with open(prices_output_file, "w") as f:
-        json.dump(game_prices, f, indent=2)
+# This function writes the given list of CSV dataframes to the output zone as CSV files
+def write_csv_files(csv_list):
+    for csv_item in csv_list:
+        file_path = clean_data_zone / csv_item["fileName"]
+        csv_item["data"].to_csv(file_path, index=False)
+        print(f"CSV written: {file_path}")
 
-    sales_output_file = landing_zone / "common_games_sales.json"
+# This function constructs the final dim_genre.csv by extracting the ids as id from the genres and the genre's name from games_genres
+# The genres will be unique, so duplicate genres will be removed, and only one row per genre will be kept in the final dim_genre.csv
+# Return type: A CSV file with columns: {fileName, data: {id(it will be steamId from common_games), gameName}}
+def construct_dim_genre_csv(games_genres):
+    rows = []
+    for game in games_genres:
+        for genre in game.get("genres", []):
+            rows.append({
+                "id": genre["id"],
+                "name": genre["name"]
+            })
+    df = pd.DataFrame(rows).drop_duplicates(subset=["id"])
+    return {"fileName": "dim_genre.csv", "data": df}
 
-    with open(sales_output_file, "w") as f:
-        json.dump(game_sales, f, indent=2)
+# This function constructs the final switch_genre.csv by extracting the steamId as gameId, and the corresponding genres id, in rows like a switch table from games_genres
+# Return type: A CSV file with columns: {fileName, data: {gameId(it will be steamId from games_genres), genreId(it will be id from games_genres)}}
+def construct_switch_genre_csv(games_genres):
+    rows = []
+    for game in games_genres:
+        steam_id = game["steamId"]
+        for genre in game.get("genres", []):
+            rows.append({
+                "gameId": steam_id,
+                "genreId": genre["id"]
+            })
+    df = pd.DataFrame(rows)
+    return {"fileName": "switch_genre.csv", "data": df}
 
-    print(f"Saved common games to: {output_file}")
-    print(f"Saved game genres to: {genres_output_file}")
-    print(f"Saved game prices to: {prices_output_file}")
-    print(f"Saved game sales to: {sales_output_file}")
-    print("Finished transformation of raw datasets into a single clean dataset...")
+# This function constructs the final dim_game.csv by extracting the game name and steamID from common games
+# Return type: A CSV file with columns: {fileName, data: {id(it will be steamId from common_games), game(it will be gameName from common_games)}}
+def construct_dim_game_csv(common_games):
+    rows = [{"id": g["steamId"], "game": g["gameName"]} for g in common_games]
+    df = pd.DataFrame(rows).drop_duplicates(subset=["id"])
+    return {"fileName": "dim_game.csv", "data": df}
+
+# This function constructs the final fact_game_sales.csv by merging the common games with their prices, and sales data.
+# Return type: A CSV file with columns: {fileName, data: {id(it will be steamId from common_games), steamPrice, playstationPrice, xboxPrice, steamSales, playstationSales, xboxSales}}
+def construct_fact_game_sales_csv(common_games, game_sales, game_prices):
+    sales_lookup = {g["steamId"]: g for g in game_sales}
+    price_lookup = {g["steamId"]: g for g in game_prices}
+
+    rows = []
+    for game in common_games:
+        steam_id = game["steamId"]
+        sales = sales_lookup.get(steam_id, {})
+        prices = price_lookup.get(steam_id, {})
+
+        rows.append({
+            "id": steam_id,
+            "steamPrice": prices.get("steamPrice", -1),
+            "playstationPrice": prices.get("playstationPrice", -1),
+            "xboxPrice": prices.get("xboxPrice", -1),
+            "steamSales": sales.get("steamSales", 0),
+            "playstationSales": sales.get("playstationSales", 0),
+            "xboxSales": sales.get("xboxSales", 0)
+        })
+    df = pd.DataFrame(rows)
+    return {"fileName": "fact_game_sales.csv", "data": df}
+
+
 
 
 # Get the aggregated sales per platform for the common games from the purchased_games_dfs
@@ -364,3 +434,13 @@ def load_game_datas_into_dataframes():
         {"platform": "xbox", "fromType": "csv", "data": xbox_csv},
         {"platform": "steam", "fromType": "json", "data": steam_json_df},
     ]
+
+# Function to empty the clean data zone before downloading new datasets
+def empty_clean_data_zone():
+    for item in clean_data_zone.iterdir():
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
+            
+    print(f"{clean_data_zone} has been emptied.")

@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 # Set up the landing zone for raw datasets
-simdata_folder = Path(os.getenv("SIMDATA_FOLDER", "/app/simdata"))
+simdata_folder = Path(os.getenv("SIMDATA_FOLDER", "/data/simdata"))
 simdata_folder.mkdir(parents=True, exist_ok=True)
 
 def zero_simulate():

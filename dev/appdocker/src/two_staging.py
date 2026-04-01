@@ -8,11 +8,11 @@ import shutil
 from utility import fetch_steam_data
 
 # Set up the landing zone for raw datasets
-landing_zone = Path(os.getenv("LANDING_ZONE", "/app/rawdata"))
+landing_zone = Path(os.getenv("LANDING_ZONE", "/data/rawdata"))
 landing_zone.mkdir(parents=True, exist_ok=True)
 
 # Set up the extract zone for raw datasets
-extract_zone = Path(os.getenv("TEMP_EXTRACT_ZONE", "/app/tmpdata"))
+extract_zone = Path(os.getenv("TEMP_EXTRACT_ZONE", "/data/tmpdata"))
 extract_zone.mkdir(parents=True, exist_ok=True)
 
 api_url = os.environ.get("API_URL")
@@ -22,16 +22,6 @@ def two_staging():
     copy_csv_data_from_extract_zone_to_landing_zone()
     copy_json_data_from_extract_zone_to_landing_zone()
     print("All raw datasets have been staged to the landing zone.")
-
-# Function to empty the landing zone before downloading new datasets
-def empty_landing_zone():
-    for item in landing_zone.iterdir():
-        if item.is_dir():
-            shutil.rmtree(item)
-        else:
-            item.unlink()
-            
-    print(f"{landing_zone} has been emptied.")
 
 # Function to copy csv datasets from the extract zone to the landing zone
 def copy_csv_data_from_extract_zone_to_landing_zone():
@@ -83,3 +73,13 @@ def copy_json_data_from_extract_zone_to_landing_zone():
 
     except Exception as e:
         print("Failed to copy json datasets:", e)
+
+# Function to empty the landing zone before downloading new datasets
+def empty_landing_zone():
+    for item in landing_zone.iterdir():
+        if item.is_dir():
+            shutil.rmtree(item)
+        else:
+            item.unlink()
+            
+    print(f"{landing_zone} has been emptied.")
