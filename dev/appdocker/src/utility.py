@@ -52,7 +52,7 @@ def fetch_steam_data(game_ids, output_file: Path):
 
         if not success:
             failed_ids.append(game_id)
-            print(f"❌ Giving up on {game_id} after 5 attempts.")
+            print(f"Giving up on {game_id} after 5 attempts.")
 
         # Save progress every 50
         if i % 50 == 0 or i == len(remaining_ids):
@@ -66,8 +66,8 @@ def fetch_steam_data(game_ids, output_file: Path):
     failed_count = len(failed_ids)
 
     print("\n=== FINAL SUMMARY ===")
-    print(f"✅ Successful: {success_count}")
-    print(f"❌ Failed: {failed_count}")
+    print(f"Successful: {success_count}")
+    print(f"Failed: {failed_count}")
 
     return {
         "success_count": success_count,

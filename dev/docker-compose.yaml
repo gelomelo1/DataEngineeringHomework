@@ -26,6 +26,7 @@ services:
       - ./rawdata:/data/rawdata
       - ./simdata:/data/simdata
       - ./tmpdata:/data/tmpdata
+      - ./cleandata:/data/cleandata
     working_dir: /app/src
     environment:
       LANDING_ZONE: /data/rawdata
@@ -34,6 +35,7 @@ services:
       SIMDATA_FOLDER: /data/simdata
       API_URL: http://api:3000
       TEMP_EXTRACT_ZONE: /data/tmpdata
+      CLEAN_DATA_ZONE: /data/cleandata
 
     command: tail -f /dev/null
     depends_on:

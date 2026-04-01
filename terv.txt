@@ -11,8 +11,11 @@ Egy adott műfaj arányosan mennyire elterjedt az egyes platformokon?
 transzformáció terv
 
 ténytábla
-game_id;genre_id;steam_sales;playstation_sales;xbox_sales;steam_price;playstation_price;xbox_price;
+game_id;steam_sales;playstation_sales;xbox_sales;steam_price;playstation_price;xbox_price;
 
 dimenziótáblák
 game_id;name
 genre_id;genre
+
+kapcsoló tábla
+game_id;genre_id

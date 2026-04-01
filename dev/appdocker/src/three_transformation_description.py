@@ -3,6 +3,14 @@
 #xbox/cs/games.csv schema: gameid,title,developers,publishers,genres,supported_languages,release_date
 #steam/json/steam_data.json schema: "2270": {"success": true, "data": {"type": "game","name": "Wolfenstein 3D","steam_appid": 2270,"required_age": 0,"is_free": false,"detailed_description": "something","supported_languages": "English","header_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2270/header.jpg?t=1750784646","capsule_image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2270/capsule_231x87.jpg?t=1750784646","capsule_imagev5": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2270/capsule_184x69.jpg?t=1750784646","website": null,"pc_requirements": {"minimum": "<strong>Minimum: </strong>A 100% Windows XP/Vista-compatible computer system"},"mac_requirements": [],"linux_requirements": [],"legal_notice": "something","price_overview": {"currency": "EUR","initial": 499,"final": 499,"discount_percent": 0,"initial_formatted": "","final_formatted": "4,99€"},"genres": [{"id": "1","description": "Action"}]}},
 
+#playstation/cs/prices.csv schema: gameid,usd,eur,gbp,jpy,rub,date_acquired
+#xbox/cs/prices.csv schema: gameid,usd,eur,gbp,jpy,rub,date_acquired
+
+#steam/cs/purchased_games.csv scheam: playerid,library
+#playstation/cs/purchased_games.csv schema: playerid,library
+#xbox/cs/purchased_games.csv schema: playerid,library
+
+
 # Set up the landing zone for raw datasets
 landing_zone = Path(os.getenv("LANDING_ZONE", "/app/rawdata"))
 landing_zone.mkdir(parents=True, exist_ok=True)
