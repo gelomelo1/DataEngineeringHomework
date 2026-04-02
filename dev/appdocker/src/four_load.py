@@ -21,6 +21,7 @@ def four_load():
         print("Clean datasets have been successfully loaded into the PostgreSQL database.")
     except Exception as e:
         print("Failed to load data into the database:", e)
+        raise
     finally:
         conn.close()
 

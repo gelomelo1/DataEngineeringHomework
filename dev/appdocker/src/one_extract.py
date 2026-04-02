@@ -29,17 +29,33 @@ def empty_extract_zone():
             
     print(f"{extract_zone} has been emptied.")
 
-# Function to extract datasets from Kaggle as CSV files
 def extract_csv_dataset_from_kaggle():
     try:
-        print("Kaggle csv dataset extraction started to:", extract_zone)
+        print("Kaggle csv dataset extraction started")
+
         dataset_path = kagglehub.dataset_download(
-            "artyomkruglov/gaming-profiles-2025-steam-playstation-xbox",
-            output_dir=extract_zone,
+            "artyomkruglov/gaming-profiles-2025-steam-playstation-xbox"
         )
-        print("Kaggle csv dataset successfully extracted to:", dataset_path)
+
+        dataset_path = Path(dataset_path)
+        print("Downloaded to:", dataset_path)
+
+        for item in dataset_path.iterdir():
+            dest = extract_zone / item.name
+            if item.is_dir():
+                shutil.copytree(item, dest, dirs_exist_ok=True)
+            else:
+                shutil.copy2(item, dest)
+
+        print("Files copied to:", extract_zone)
+
+        shutil.rmtree(dataset_path, ignore_errors=True)
+
+        print("Temporary Kaggle download deleted:", dataset_path)
+
     except Exception as e:
         print("Failed to extract Kaggle CSV dataset:", e)
+        raise
 
 # Function to extract datasets from Steam as JSON files
 # This function fetches the Steam data from a local REST API endpoint, which serves the combined real and fake data, and saves it to a JSON file in the landing zone.
@@ -64,3 +80,4 @@ def extract_json_dataset_from_steam():
 
     except requests.RequestException as e:
         print("Failed to fetch Steam data:", e)
+        raise

@@ -1,3 +1,13 @@
+x-common-env: &common-env
+  DATABASE_URL: postgres://dataengineeringuser:dataengineeringpwd@db:5432/dataengineeringdb
+  KAGGLE_API_TOKEN: KGAT_7ec727d8cbc61e4e1927a849a122fbbd
+  API_URL: http://api:3000
+  POSTGRES_HOST: db
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: dataengineeringdb
+  POSTGRES_USER: dataengineeringuser
+  POSTGRES_PASSWORD: dataengineeringpwd
+
 services:
   db:
     image: postgres:16
@@ -5,13 +15,19 @@ services:
       POSTGRES_USER: dataengineeringuser
       POSTGRES_PASSWORD: dataengineeringpwd
       POSTGRES_DB: dataengineeringdb
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
 
   metabase:
     image: metabase/metabase:latest
+    volumes:
+      - ./metabasedata:/metabase-data
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
     ports:
       - "3001:3000"
     depends_on:
@@ -30,6 +46,7 @@ services:
 
   app:
     build: ./appdocker
+    profiles: ["dev"]
     volumes:
       - ./appdocker:/app
       - ./rawdata:/data/rawdata
@@ -39,44 +56,51 @@ services:
     working_dir: /app/src
     environment:
       LANDING_ZONE: /data/rawdata
-      DATABASE_URL: postgres://dataengineeringuser:dataengineeringpwd@db:5432/dataengineeringdb
-      KAGGLE_API_TOKEN: KGAT_7ec727d8cbc61e4e1927a849a122fbbd
       SIMDATA_FOLDER: /data/simdata
-      API_URL: http://api:3000
       TEMP_EXTRACT_ZONE: /data/tmpdata
       CLEAN_DATA_ZONE: /data/cleandata
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: dataengineeringdb
-      POSTGRES_USER: dataengineeringuser
-      POSTGRES_PASSWORD: dataengineeringpwd
+      <<: *common-env
 
     command: tail -f /dev/null
     depends_on:
       - db
       - api
 
-    airflow:
-      image: apache/airflow:2.7.1
-      environment:
-        AIRFLOW__CORE__EXECUTOR: LocalExecutor
-        AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://dataengineeringuser:dataengineeringpwd@db:5432/dataengineeringdb
-        AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-        AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
-      ports:
-        - "8080:8080"
-      volumes:
-        - ./appdag/dags:/opt/airflow/dags
-        - ./appdag/logs:/opt/airflow/logs
-        - ./appdag/plugins:/opt/airflow/plugins
-        - ./appdocker/src:/opt/airflow/appsrc
-      depends_on:
-        - db
-        - api
-      command: >
-        bash -c "
-        airflow db init &&
-        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
-        airflow scheduler &
-        airflow webserver
-        "
+  airflow:
+    image: apache/airflow:2.7.1
+    profiles: ["prod"]
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflowuser:airflowpwd@db:5432/airflowdb
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflowuser:airflowpwd@db:5432/airflowdb
+      AIRFLOW__DATABASE__ALCHEMY_CONN: postgresql+psycopg2://airflowuser:airflowpwd@db:5432/airflowdb
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
+      LANDING_ZONE: /opt/airflow/data/rawdata
+      SIMDATA_FOLDER: /opt/airflow/data/simdata
+      TEMP_EXTRACT_ZONE: /opt/airflow/data/tmpdata
+      CLEAN_DATA_ZONE: /opt/airflow/data/cleandata
+      <<: *common-env
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./appdag/dags:/opt/airflow/dags
+      - ./appdag/logs:/opt/airflow/logs
+      - ./appdag/plugins:/opt/airflow/plugins
+      - ./appdocker/src:/opt/airflow/appsrc
+      - ./appdocker/requirements.txt:/opt/airflow/requirements.txt
+      - ./rawdata:/opt/airflow/data/rawdata
+      - ./simdata:/opt/airflow/data/simdata
+      - ./tmpdata:/opt/airflow/data/tmpdata
+      - ./cleandata:/opt/airflow/data/cleandata
+    depends_on:
+      - db
+      - api
+    command: >
+      bash -c "
+      pip install --no-cache-dir -r /opt/airflow/requirements.txt &&
+      airflow db init &&
+      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+      airflow scheduler &
+      exec airflow webserver
+      "

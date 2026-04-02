@@ -4,9 +4,9 @@ nyers adat
 -A Steam Api nagyon limitált, csak 1 játék / lekérdezés, és 200 request után letilt, 2 óra alatt sikerült lekérni az összes 3923 játék adatát, viszont a háziba ez túl hosszú idő, ezért ezekkel a valós adatokkal modellezek egy local rest api-t, és úgy hívom meg azt, ahogy a Steam Api-t hívom, csak itt nem lesz rate limit
 
 analitikai lekérdezések
-Egy adott játéknak arányosan hogy oszlanak el az eladásai az egyes platformokon (Steam vs Playstation és Xbox összes platform generáció)?
+Egy adott játéknak hogy oszlanak el az eladásai az egyes platformokon (Steam vs Playstation és Xbox összes platform generáció)?
 Átlagos ár különbség a legfrissebb platformon lévő azonos játékok árai között?
-Egy adott műfaj arányosan mennyire elterjedt az egyes platformokon?
+Egy adott műfaj mennyire elterjedt az egyes platformokon?
 
 transzformáció terv
 
@@ -19,3 +19,5 @@ genre_id;genre - dim_genre
 
 kapcsoló tábla
 game_id;genre_id - switch_genre
+
+http://localhost:3001/public/dashboard/e76d639e-d4d7-4e2b-9109-3a44767d31a9

@@ -8,3 +8,4 @@ __pycache__/
 /dev/tmpdata/
 /dev/cleandata/
 /dev/simdata/steam_data.json
+/dev/appdag/logs/

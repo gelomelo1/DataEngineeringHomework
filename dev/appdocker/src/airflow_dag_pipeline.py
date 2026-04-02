@@ -62,7 +62,7 @@ def game_pipeline_dag():
     extracted = one_extract_task()
     staged = two_staging_task()
     transformed = three_transformation_task()
-    loaded = four_load_task(transformed)
+    loaded = four_load_task()
     final_success = final_success_task()
 
     # Define dependencies

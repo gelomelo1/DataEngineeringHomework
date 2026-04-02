@@ -1,9 +1,12 @@
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 import os
 
 from airflow.decorators import dag, task
 from airflow.utils.dates import days_ago
+
+sys.path.append("/opt/airflow/appsrc")
 
 # Dag configuration
 default_args = {
@@ -29,27 +32,27 @@ def game_pipeline_dag():
 
     @task()
     def zero_simulate_task() -> None:
-        from appsrc.zero_simulate import zero_simulate
+        from zero_simulate import zero_simulate
         zero_simulate()
 
     @task()
     def one_extract_task() -> None:
-        from appsrc.one_extract import one_extract
+        from one_extract import one_extract
         one_extract()
 
     @task()
     def two_staging_task() -> None:
-        from appsrc.two_staging import two_staging
+        from two_staging import two_staging
         two_staging()
 
     @task()
     def three_transformation_task() -> dict:
-        from appsrc.three_transformation import three_transformation
+        from three_transformation import three_transformation
         three_transformation()
 
     @task()
     def four_load_task() -> None:
-        from appsrc.four_load import four_load
+        from four_load import four_load
         four_load()
     
     @task()
@@ -62,7 +65,7 @@ def game_pipeline_dag():
     extracted = one_extract_task()
     staged = two_staging_task()
     transformed = three_transformation_task()
-    loaded = four_load_task(transformed)
+    loaded = four_load_task()
     final_success = final_success_task()
 
     # Define dependencies

@@ -11,12 +11,12 @@ zero_simulate()
 one_extract()
 
 #2. STAGE - Move the raw datasets to the landing zone, where the data will be stored in a structured way, ready for the next steps of the pipeline
-two_staging()
+#two_staging()
 
 #3. TRANSFORM - Transform the multiple raw datasets into a single clean csv dataset, using null check, normalization, aggregation
-three_transformation()
+#three_transformation()
 
 #4. LOAD - Load the clean dataset into postgreSQL
-four_load()
+#four_load()
 
 print("Pipeline finnished successfully.")

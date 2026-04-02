@@ -51,6 +51,7 @@ def copy_csv_data_from_extract_zone_to_landing_zone():
 
     except Exception as e:
         print("Failed to copy csv datasets:", e)
+        raise
 
 # Function to copy json datasets from the extract zone to the landing zone
 def copy_json_data_from_extract_zone_to_landing_zone():
@@ -73,6 +74,7 @@ def copy_json_data_from_extract_zone_to_landing_zone():
 
     except Exception as e:
         print("Failed to copy json datasets:", e)
+        raise
 
 # Function to empty the landing zone before downloading new datasets
 def empty_landing_zone():
