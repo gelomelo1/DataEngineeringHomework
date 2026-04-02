@@ -2,6 +2,7 @@ from one_extract import one_extract
 from zero_simulate import zero_simulate
 from two_staging import two_staging
 from three_transformation import three_transformation
+from four_load import four_load
 
 # 0. SOURCE - Generate fake json data for steam (real data + fake data)
 zero_simulate()
@@ -14,5 +15,8 @@ two_staging()
 
 #3. TRANSFORM - Transform the multiple raw datasets into a single clean csv dataset, using null check, normalization, aggregation
 three_transformation()
+
+#4. LOAD - Load the clean dataset into postgreSQL
+four_load()
 
 print("Pipeline finnished successfully.")

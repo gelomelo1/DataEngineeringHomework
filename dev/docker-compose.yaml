@@ -7,6 +7,15 @@ services:
       POSTGRES_DB: dataengineeringdb
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3001:3000"
+    depends_on:
+      - db
 
   api:
     build: ./apidocker
@@ -36,8 +45,38 @@ services:
       API_URL: http://api:3000
       TEMP_EXTRACT_ZONE: /data/tmpdata
       CLEAN_DATA_ZONE: /data/cleandata
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: dataengineeringdb
+      POSTGRES_USER: dataengineeringuser
+      POSTGRES_PASSWORD: dataengineeringpwd
 
     command: tail -f /dev/null
     depends_on:
       - db
       - api
+
+    airflow:
+      image: apache/airflow:2.7.1
+      environment:
+        AIRFLOW__CORE__EXECUTOR: LocalExecutor
+        AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://dataengineeringuser:dataengineeringpwd@db:5432/dataengineeringdb
+        AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+        AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
+      ports:
+        - "8080:8080"
+      volumes:
+        - ./appdag/dags:/opt/airflow/dags
+        - ./appdag/logs:/opt/airflow/logs
+        - ./appdag/plugins:/opt/airflow/plugins
+        - ./appdocker/src:/opt/airflow/appsrc
+      depends_on:
+        - db
+        - api
+      command: >
+        bash -c "
+        airflow db init &&
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+        airflow scheduler &
+        airflow webserver
+        "
