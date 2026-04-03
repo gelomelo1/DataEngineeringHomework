@@ -84,6 +84,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
+      - ./appdag/entrypoint.sh:/opt/airflow/entrypoint.sh
       - ./appdag/dags:/opt/airflow/dags
       - ./appdag/logs:/opt/airflow/logs
       - ./appdag/plugins:/opt/airflow/plugins
@@ -96,11 +97,4 @@ services:
     depends_on:
       - db
       - api
-    command: >
-      bash -c "
-      pip install --no-cache-dir -r /opt/airflow/requirements.txt &&
-      airflow db init &&
-      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
-      airflow scheduler &
-      exec airflow webserver
-      "
+    entrypoint: ["/bin/bash", "/opt/airflow/entrypoint.sh"]
