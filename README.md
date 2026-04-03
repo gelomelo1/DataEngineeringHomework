@@ -12,7 +12,7 @@ Házi feladat projektem a Data Engineering a gyakorlatban tárgyhoz.
 
 - Két módban tudjuk elindítani a projektet:
   - **Developer mód(egyszerű futtatáshoz nem ez kell)**: 1. `docker-compose --profile dev build`    2. `docker-compose --profile dev up -d`
-    A developer módra azért van szükség, mert jobban lehet debugolni, ugyanis ilyenkor a szükséges service konténerekben a programok automatikusan elindulnak, viszont a fő applikáció konténerében a pipeline nem indul el, azt a fejlesztő tudja elindítani, megállítani, ha Visual Studio Code-ban a Dev Containers extension-el belép a fő applikáció konténerbe, és ott futtat közvetlen pyhton parancsokat. Ilyenkor ha hiba lép fel, akkor azt a terminálban a fejlesztő egyből látja, és nem kell a sok log között kikeresni azt.
+    A developer módra azért van szükség, mert jobban lehet debugolni, ugyanis ilyenkor a szükséges service konténerekben a programok automatikusan elindulnak, viszont a fő applikáció konténerében a pipeline nem indul el, azt a fejlesztő tudja elindítani, megállítani, ha Visual Studio Code-ban a Dev Containers extension-el belép a fő applikáció konténerbe, és ott futtat közvetlen python parancsokat. Ilyenkor ha hiba lép fel, akkor azt a terminálban a fejlesztő egyből látja, és nem kell a sok log között kikeresni azt.
   - **Production mód(egyszerű futtatáshoz ezt használjuk)**: 1. `docker-compose --profile prod up -d`
     A production módot kell használni akkor, ha le szeretnénk tesztelni, hogy működik-e az egész projekt. Production módban minden service konténerben a programok automatikusan elindulnak, az Apache Airflow is, további parancsokat nem kell kiadni.
 
