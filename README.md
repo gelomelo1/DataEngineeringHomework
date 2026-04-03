@@ -25,5 +25,4 @@ Házi feladat projektem a Data Engineering a gyakorlatban tárgyhoz.
   Kezdetben nem fog adatot megjeleníteni, meg kell várni egy pipeline ciklust, hogy legyen adat betöltve az adatbázisba.
 
 ## Architektúra
-
-    ![Architektúra](./architecture.png)
+![Architektúra](./architecture.png)
