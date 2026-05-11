@@ -19,6 +19,8 @@ Házi feladat projektem a Data Engineering a gyakorlatban tárgyhoz.
 
 ## Webszerverek elérhetőségei
 
+A konténer indítása után várjunk 2 percet, amíg a szükséges szolgáltatások inicializálódnak.
+
 - **Apache Airflow:** [http://localhost:8080](http://localhost:8080)
   *game_data_pipeline* id-val van definiálva a dag.
 
